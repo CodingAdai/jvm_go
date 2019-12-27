@@ -1,6 +1,9 @@
 package classfile
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type ClassFile struct {
 	minorVersion uint16
@@ -57,4 +60,55 @@ func (self *ClassFile) MajorVersion() uint16 {
 
 func (self *ClassFile) MinorVersion() uint16 {
 	return self.minorVersion
+}
+
+func (self *ClassFile) ConstantPool() ConstantPool {
+	return self.constantPool
+}
+
+func (self *ClassFile) AccessFlags() uint16 {
+	return self.accessFlags
+}
+
+func (self *ClassFile) Fields() []*MemberInfo {
+	return self.fields
+}
+
+func (self *ClassFile) Methods() []*MemberInfo {
+	return self.methods
+}
+
+func (self *ClassFile) Attributes() []AttributeInfo {
+	return self.attributes
+}
+
+func (self *ClassFile) ClassName() string {
+	return self.constantPool.getClassName(self.thisClass)
+}
+
+func (self *ClassFile) SuperClassName() string {
+	if self.superClass > 0 {
+		return self.constantPool.getClassName(self.superClass)
+	}
+	return ""
+}
+
+func (self *ClassFile) InterfaceNames() []string {
+
+	interfaceNames := make([]string, len(self.interfaces))
+	for i, cpIndex := range self.interfaces {
+		interfaceNames[i] = self.constantPool.getClassName(cpIndex)
+	}
+
+	return interfaceNames
+}
+
+func (self *ClassFile) readAndCheckMagic(reader *ClassReader) {
+
+	magic := reader.readUint32()
+
+	if magic != 0xCAFEBABE {
+		panic("java.lang.ClassFormatError: magic!")
+	}
+
 }
